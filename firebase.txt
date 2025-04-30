@@ -1,0 +1,178 @@
+build.gradle.kts(app level)
+dependencies
+{
+implementation(libs.firebase.auth)
+implementation(libs.firebase.database)
+}
+
+
+libs.versions.toml:
+[versions]
+firebaseDatabase = "21.0.0"
+kotlin = "2.1.0"
+firebase-auth = "23.2.0"
+[libraries]
+firebase-database = { group = "com.google.firebase", name = "firebase-database", version.ref = "firebaseDatabase" }
+firebase-auth = { module = "com.google.firebase:firebase-auth-ktx", version.ref = "firebase-auth" }
+
+
+build.gradle.kts(project level)
+buildscript {
+    repositories {
+        google()  
+        mavenCentral() 
+    }
+
+    dependencies {
+        classpath("com.google.gms:google-services:4.3.15") 
+    }
+}
+
+
+activity_main.xml:
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".MainActivity">
+
+    <!-- Name Input -->
+    <EditText
+        android:id="@+id/editTextTextMultiLine"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:hint="Enter name"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
+    <!-- Email Input -->
+    <EditText
+        android:id="@+id/editTextTextMultiLine2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:hint="Enter Email"
+        app:layout_constraintTop_toBottomOf="@id/editTextTextMultiLine"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
+    <!-- Save Button -->
+    <Button
+        android:id="@+id/buttonSave"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Save"
+        app:layout_constraintTop_toBottomOf="@id/editTextTextMultiLine2"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
+    <!-- ListView to Display Data -->
+    <ListView
+        android:id="@+id/listView"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintTop_toBottomOf="@+id/buttonSave"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
+</androidx.constraintlayout.widget.ConstraintLayout>
+
+
+
+MainActivity.kt:
+package com.example.god
+
+import android.os.Bundle
+import android.widget.*
+import androidx.appcompat.app.AppCompatActivity
+import com.google.firebase.database.*
+import com.google.firebase.database.ktx.database
+import com.google.firebase.ktx.Firebase
+
+class MainActivity : AppCompatActivity() {
+
+    private lateinit var nameEditText: EditText
+    private lateinit var emailEditText: EditText
+    private lateinit var saveButton: Button
+    private lateinit var listView: ListView
+
+    private lateinit var database: DatabaseReference
+    private lateinit var adapter: ArrayAdapter<String>
+    private val userList = mutableListOf<String>()
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_main)
+
+        nameEditText = findViewById(R.id.editTextTextMultiLine)
+        emailEditText = findViewById(R.id.editTextTextMultiLine2)
+        saveButton = findViewById(R.id.buttonSave)
+        listView = findViewById(R.id.listView)
+
+        database = Firebase.database.reference.child("users") // More concise initialization
+
+        adapter = ArrayAdapter(this, android.R.layout.simple_list_item_1, userList)
+        listView.adapter = adapter
+
+        saveButton.setOnClickListener {
+            saveUser()
+        }
+
+        loadUsers()
+    }
+
+    private fun saveUser() {
+        val name = nameEditText.text.toString()
+        val email = emailEditText.text.toString()
+
+        if (name.isBlank() || email.isBlank()) {
+            Toast.makeText(this, "Please fill in all fields", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        val userId = database.push().key ?: return
+        val user = User(name, email)
+
+        database.child(userId).setValue(user)
+            .addOnSuccessListener {
+                nameEditText.text.clear()
+                emailEditText.text.clear()
+                Toast.makeText(this, "User saved successfully", Toast.LENGTH_SHORT).show()
+            }
+            .addOnFailureListener {
+                Toast.makeText(this, "Failed to save user", Toast.LENGTH_SHORT).show()
+            }
+    }
+
+    private fun loadUsers() {
+        database.addValueEventListener(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                userList.clear()
+                for (userSnapshot in snapshot.children) {
+                    val user = userSnapshot.getValue(User::class.java)
+                    if (user != null) {
+                        userList.add("${user.name} - ${user.email}")
+                    }
+                }
+                adapter.notifyDataSetChanged()
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                Toast.makeText(applicationContext, "Failed to load users", Toast.LENGTH_SHORT)
+                    .show()
+            }
+        })
+    }
+}
+
+
+
+User.kt:
+package com.example.god
+
+data class User(
+    val name: String = "",
+    val email: String = ""
+)

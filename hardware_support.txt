@@ -1,0 +1,209 @@
+<uses-permission android:name="android.permission.BLUETOOTH" />
+    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
+    <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+
+
+
+
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".MainActivity2">
+
+    <TextView
+        android:id="@+id/bluetoothtext"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Bluetooth Status"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.775"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.259" />
+
+    <Button
+        android:id="@+id/bluetoothbutton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Bluetooth on/off "
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.062"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.25" />
+
+    <Button
+        android:id="@+id/wifibutton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Wifi on/off"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.088"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.412" />
+
+    <TextView
+        android:id="@+id/wifitext"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Wifi status"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.753"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.412" />
+
+    <Button
+        android:id="@+id/camerabutton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="420dp"
+        android:text="Camera button"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.118"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/cameratext"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="436dp"
+        android:text="camera"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.736"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
+
+
+
+package com.example.myapplication1
+
+import android.bluetooth.BluetoothAdapter
+import android.content.Intent
+import android.Manifest
+import android.content.pm.PackageManager
+import android.net.wifi.WifiManager
+import android.os.Bundle
+import android.provider.MediaStore
+import android.widget.Button
+import android.widget.TextView
+import android.widget.Toast
+import androidx.activity.enableEdgeToEdge
+import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
+
+class MainActivity2 : AppCompatActivity() {
+    private val bluetoothAdapter: BluetoothAdapter? = BluetoothAdapter.getDefaultAdapter()
+    private val CAMERA_PERMISSION_CODE = 100
+    
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        enableEdgeToEdge()
+        setContentView(R.layout.activity_main2)
+        
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
+            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
+            insets
+        }
+        
+        val bluetoothtext = findViewById<TextView>(R.id.bluetoothtext)
+        val btoggle = findViewById<Button>(R.id.bluetoothbutton)
+        
+        fun bluetoothstatus() {
+            bluetoothtext.text = when {
+                bluetoothAdapter == null -> "Bluetooth not available"
+                bluetoothAdapter.isEnabled -> "Bluetooth is ON"
+                else -> "Bluetooth is OFF"
+            }
+        }
+        
+        bluetoothstatus()
+
+        btoggle.setOnClickListener {
+            if (bluetoothAdapter != null) {
+                try {
+                    if (bluetoothAdapter.isEnabled) {
+                        bluetoothAdapter.disable()
+                    } else {
+                        bluetoothAdapter.enable()
+                    }
+                    bluetoothstatus()
+                } catch (e: SecurityException) {
+                    Toast.makeText(this, "Bluetooth permission denied", Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+
+        val wifiManager = applicationContext.getSystemService(WIFI_SERVICE) as WifiManager
+
+        val wifitext = findViewById<TextView>(R.id.wifitext)
+        val wifibutton = findViewById<Button>(R.id.wifibutton)
+
+        fun wifistatus() {
+            wifitext.text = if (wifiManager.isWifiEnabled) "WiFi is ON" else "WiFi is OFF"
+        }
+
+        wifistatus()
+
+        wifibutton.setOnClickListener {
+            try {
+                wifiManager.isWifiEnabled = !wifiManager.isWifiEnabled
+                wifistatus()
+            } catch (e: SecurityException) {
+                Toast.makeText(this, "WiFi permission denied", Toast.LENGTH_SHORT).show()
+            }
+        }
+
+        val cameratext = findViewById<TextView>(R.id.cameratext)
+        val camerabutton = findViewById<Button>(R.id.camerabutton)
+
+        cameratext.text = "Camera ready"
+        
+        camerabutton.setOnClickListener {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
+                != PackageManager.PERMISSION_GRANTED
+            ) {
+                ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.CAMERA), CAMERA_PERMISSION_CODE)
+            } else {
+                openCamera()
+            }
+        }
+    }
+
+    private fun openCamera() {
+        val cameraIntent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
+        if (cameraIntent.resolveActivity(packageManager) != null) {
+            startActivity(cameraIntent)
+        } else {
+            Toast.makeText(this, "No camera app found", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode == CAMERA_PERMISSION_CODE && grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+            openCamera()
+        } else {
+            Toast.makeText(this, "Camera permission denied", Toast.LENGTH_SHORT).show()
+        }
+    }
+}
