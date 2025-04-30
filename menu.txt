@@ -1,0 +1,94 @@
+Options menu:
+
+create a file menu.xml
+new -> android resource file -> menu.xml(File name) -> Menu(Resource type) -> create
+res->values->themes-> in both files....change "Theme.AppCompat.Light.DarkActionBar"
+
+menu.xml:
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:title="Notification"
+        android:id="@+id/notification"
+        app:showAsAction="never"/>
+    <item android:title="Location"
+        android:id="@+id/location"
+        app:showAsAction="never"/>
+</menu>
+
+
+MainActivity2.kt:
+override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        menuInflater.inflate(R.menu.menu, menu)
+        return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        when(item.itemId){
+            R.id.notification -> {
+                val intent = Intent(this, MainActivity::class.java)
+                startActivity(intent)
+            }
+        }
+        return true
+    }
+
+
+
+
+Popup Menu:
+
+val b1 : Button = findViewById(R.id.button2)
+        b1.setOnClickListener {
+            val popupMenu = PopupMenu(this, b1)
+            popupMenu.menuInflater.inflate(R.menu.menu, popupMenu.menu)
+            popupMenu.setOnMenuItemClickListener { item ->
+                when (item.itemId) {
+                    R.id.notification -> {
+                        val intent = Intent(this, MainActivity::class.java)
+                        startActivity(intent)
+                        true
+                    }
+                    else -> false
+                }
+            }
+            popupMenu.show()
+        }
+
+
+
+
+Context Menu:
+
+for context menu
+
+first declare the scope
+private lateinit var constraintLayout: ConstraintLayout
+
+next register inside oncreate function
+
+constraintLayout = findViewById(R.id.main)
+registerForContextMenu(constraintLayout)
+
+
+
+then
+override fun onCreateContextMenu(menu: ContextMenu, v: View, menuInfo: ContextMenu.ContextMenuInfo?) {
+        super.onCreateContextMenu(menu, v, menuInfo)
+        menu.setHeaderTitle("Select")
+        menu.add(0, v.id, 0, "Notification")
+        menu.add(0, v.id, 0, "Location")
+    }
+
+    override fun onContextItemSelected(item: MenuItem): Boolean {
+        when (item.title) {
+            "Notification" -> {
+                val intent = Intent(this, MainActivity::class.java)
+                startActivity(intent)
+            }
+            "Location" -> {
+                Toast.makeText(this, "Nothing so far", Toast.LENGTH_SHORT).show()
+            }
+        }
+        return true
+    }

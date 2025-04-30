@@ -1,0 +1,23 @@
+create a folder in res(new resource directory) name as anim type also anim
+create it
+then right click that anim folder create new animation resource file then slide_in.xml
+saveee
+
+slide_in.xml
+<?xml version="1.0" encoding="utf-8"?>
+<set xmlns:android="http://schemas.android.com/apk/res/android">
+<scale
+    android:fromXScale="1.0"
+    android:fromYScale="1.0"
+    android:duration="1000"
+    android:toXScale="1.0"
+    android:toYScale="0.0" />
+</set>
+
+in kt file
+
+    private lateinit var textvieww:TextView
+
+ textvieww=findViewById(R.id.textView2)
+ val slidee=AnimationUtils.loadAnimation(this,R.anim.slide_in)
+ textvieww.startAnimation(slidee)

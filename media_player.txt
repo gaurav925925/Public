@@ -1,0 +1,26 @@
+private lateinit var mediaPlayer: MediaPlayer
+private lateinit var start: Button
+private lateinit var pause: Button
+
+start = findViewById(R.id.start)
+        pause = findViewById(R.id.pause)
+        mediaPlayer = MediaPlayer.create(this, R.raw.songs)
+        start.setOnClickListener {
+            if (!mediaPlayer.isPlaying) {
+                mediaPlayer.start()
+            }
+        }
+        pause.setOnClickListener {
+            if (mediaPlayer.isPlaying) {
+                mediaPlayer.pause()
+                mediaPlayer.seekTo(0)
+            }
+        }
+
+
+override fun onDestroy() {
+        super.onDestroy()
+        if (this::mediaPlayer.isInitialized) {
+            mediaPlayer.release()
+        }
+    }

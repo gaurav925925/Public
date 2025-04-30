@@ -1,0 +1,11 @@
+val ad = androidx.appcompat.app.AlertDialog.Builder(this)
+                .setTitle("Send Notification?")
+                .setMessage("Do you want to send Notification now?")
+                .setPositiveButton("Yes") {_, _ ->
+                    sendNotification()
+                }
+                .setNegativeButton("No") { dialog, _ ->
+                    dialog.dismiss()
+                }
+                .create()
+            ad.show()
